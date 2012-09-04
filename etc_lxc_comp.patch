@@ -1,0 +1,76 @@
+diff -urN orig/etc/init/start-ttys.conf lxc/etc/init/start-ttys.conf
+--- orig/etc/init/start-ttys.conf	1970-01-01 01:00:00.000000000 +0100
++++ lxc/etc/init/start-ttys.conf	2012-04-27 11:48:34.000000000 +0200
+@@ -0,0 +1,15 @@
++#
++# This service starts the configured number of gettys.
++
++start on stopped rc RUNLEVEL=[2345]
++
++env ACTIVE_CONSOLES=/dev/tty[1-6]
++env X_TTY=/dev/tty1
++task
++script
++	. /etc/sysconfig/init
++	for tty in $(echo $ACTIVE_CONSOLES) ; do
++		[ "$RUNLEVEL" = "5" -a "$tty" = "$X_TTY" ] && continue
++		initctl start tty TTY=$tty
++	done
++end script
+diff -urN orig/etc/init/tty.conf lxc/etc/init/tty.conf
+--- orig/etc/init/tty.conf	1970-01-01 01:00:00.000000000 +0100
++++ lxc/etc/init/tty.conf	2012-04-27 11:48:34.000000000 +0200
+@@ -0,0 +1,9 @@
++# tty - getty
++#
++# This service maintains a getty on the specified device.
++
++stop on runlevel [S016]
++
++respawn
++instance $TTY
++exec /sbin/mingetty $TTY
+diff -urN orig/etc/rc.d/rc.sysinit lxc/etc/rc.d/rc.sysinit
+--- orig/etc/rc.d/rc.sysinit	2012-06-22 21:52:25.000000000 +0200
++++ lxc/etc/rc.d/rc.sysinit	2012-08-22 22:06:40.000000000 +0200
+@@ -140,7 +140,7 @@
+ nashpid=$(pidof nash 2>/dev/null)
+ [ -n "$nashpid" ] && kill $nashpid >/dev/null 2>&1
+ unset nashpid
+-/sbin/start_udev
++#/sbin/start_udev
+ 
+ # Load other user-defined modules
+ for file in /etc/sysconfig/modules/*.modules ; do
+@@ -152,8 +152,8 @@
+ 	/etc/rc.modules
+ fi
+ 
+-mount -n /dev/pts >/dev/null 2>&1
+-[ -n "$SELINUX_STATE" ] && restorecon -F /dev/pts >/dev/null 2>&1
++#mount -n /dev/pts >/dev/null 2>&1
++#[ -n "$SELINUX_STATE" ] && restorecon -F /dev/pts >/dev/null 2>&1
+ 
+ # Configure kernel parameters
+ update_boot_stage RCkernelparam
+@@ -493,7 +493,7 @@
+ 	mount -f /
+ 	mount -f /proc >/dev/null 2>&1
+ 	mount -f /sys >/dev/null 2>&1
+-	mount -f /dev/pts >/dev/null 2>&1
++	#mount -f /dev/pts >/dev/null 2>&1
+ 	mount -f /dev/shm >/dev/null 2>&1
+ 	mount -f /proc/bus/usb >/dev/null 2>&1
+ fi
+diff -urN orig/etc/sysconfig/init lxc/etc/sysconfig/init
+--- orig/etc/sysconfig/init	2012-08-22 09:42:09.000000000 +0200
++++ lxc/etc/sysconfig/init	2012-08-22 22:07:08.000000000 +0200
+@@ -20,7 +20,7 @@
+ # Set to 'yes' to allow probing for devices with swap signatures
+ AUTOSWAP=no
+ # What ttys should gettys be started on?
+-ACTIVE_CONSOLES=/dev/tty[1-6]
++ACTIVE_CONSOLES=/dev/tty1
+ # Set to '/sbin/sulogin' to prompt for password on single-user mode
+ # Set to '/sbin/sushell' otherwise
+ SINGLE=/sbin/sushell
