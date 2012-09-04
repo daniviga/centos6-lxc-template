@@ -7,7 +7,7 @@ How to
 -------------
 
 * Download centos-6-x86_64.tar.gz from [http://wiki.openvz.org/Download/template/precreated](http://wiki.openvz.org/Download/template/precreated)
-* Exctract it with tar xzps
+* Extract it with tar xzps
 * Chroot into the container and change the root password  
 `chroot /path/to/the/container`  
 `passwd root`
